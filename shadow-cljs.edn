@@ -2,7 +2,8 @@
 {:deps true
 
  :builds
- {:app {:target :browser
+ {:app {:compiler-options {:output-feature-set :es8}
+        :target :browser
         :output-dir "js"
         :asset-path "/js"
         :modules {:app {:entries [todo-mvc.core]}}

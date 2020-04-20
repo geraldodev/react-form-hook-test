@@ -1,3 +1,4 @@
+.clj-kondo/.cache
 node_modules
 js/
 /package-lock.json
