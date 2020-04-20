@@ -1,4 +1,6 @@
 {:paths ["src"]
- :deps {lilactown/helix {:mvn/version "0.0.10"}
+ :deps {
+        appliedscience/js-interop {:mvn/version "0.2.5"}
+        lilactown/helix {:mvn/version "0.0.10"}
         binaryage/devtools {:mvn/version "0.9.7"}
         thheller/shadow-cljs {:mvn/version "2.8.94"}}}
