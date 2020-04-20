@@ -20,17 +20,20 @@
                        watch
                        errors
                        setValue
-                       getValues] :as obj} (rhf/useForm)]
+                       getValues] :as obj} (rhf/useForm)
+
+          ;; https://react-hook-form.com/api/#handleSubmit
+          fn-submit (fn [data e]
+                      (.log js/console "data on handleSubmit")
+                      (.log js/console data)
+                      (.log js/console "getValues on handleSubmit")
+                      (.log js/console (getValues)))]
+
     (.log js/console obj)
     (d/form 
       {:on-submit (fn [e]
                     (.log js/console "on-submit")
-                    (handleSubmit((fn [x]
-                                    (.log js/console "x on handleSubmit")
-                                    (.log js/console x)
-                                    (.log js/console "getValues on handleSubmit")
-                                    (.log js/console (getValues))
-)))
+                    (handleSubmit fn-submit)
                     (.preventDefault e)
                     (.log js/console "errors:")
                     (.log js/console errors)
