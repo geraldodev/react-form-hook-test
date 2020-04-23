@@ -1,11 +1,11 @@
-(ns todo-mvc.core
+(ns app.core
   (:require
     [applied-science.js-interop :as j]
     [clojure.string :as string]
     [helix.core :as hx :refer [$ <>]]
     [helix.dom :as d]
     [helix.hooks :as hooks]
-    [todo-mvc.lib :refer [defnc]]
+    [app.lib :refer [defnc]]
     ["react" :as r]
     ["react-dom" :as rdom]
     ["react-router-dom" :as rr]

@@ -1,2 +1,2 @@
 {:lint-as {applied-science.js-interop/let clojure.core/let
-           todo-mvc.lib/defnc clojure.core/defn }}
+           app.lib/defnc clojure.core/defn }}
