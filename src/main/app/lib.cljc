@@ -1,6 +1,6 @@
-(ns todo-mvc.lib
+(ns app.lib
   #?(:clj (:require [helix.core :as helix]))
-  #?(:cljs (:require-macros [todo-mvc.lib])))
+  #?(:cljs (:require-macros [app.lib])))
 
 
 #?(:clj
