@@ -7,6 +7,7 @@
     [malli.core :as m]
     [malli.error :as me]
     [malli.util :as mu]
+    [spy.core :as spy]
     ))
 
 (set-refresh-dirs "src/main" "src/dev")
@@ -29,44 +30,41 @@
   (restart)
   )
 
+
 (defn ride-malli-zipper
   [schema]
   (loop [loc (malli-zipper schema)]
     (if (z/end? loc)
       (println "end")
       (let [n (z/node loc)
-            n (try
-                (m/name  n)
-                (catch Exception e
-                  (cond (sequential? n)
-                        (first n)
-
-                        (keyword? n)
-                        (str n " keyword")
-
-                        (symbol? n)
-                        (str n " symbol")
-
-                        :else "sem name")
-                  ))]
+            n (mz/malli-tag n)]
         (println n)
         (recur (z/next loc) )))))
+
  (def Schema
-  (m/schema
-    [:and
-     [:map
-      {:foo :bar}
-      [:nome string?]
-      [:sexo string? [:enum "masculino" "feminino"]]
-      [:endereco [:map
-                  [:cep string?]
-                  [:estado string?]
-                  [:telefone {:optional true} string?]] ]
-      ]
-     [:fn 'identity]
-     ]))
+   (m/schema
+     [:and
+      [:map
+       {:foo :bar}
+       [:nome string?]
+       [:sexo string? [:enum "masculino" "feminino"]]
+       [:endereco [:maybe [:map
+                           [:cep string?]
+                           [:estado string?]
+                           [:telefone {:optional true} string?]]] ]
+       ]
+      [:fn 'identity]
+      ]))
 
 (comment
+  (pprint (mz/just-map-schema Schema))
+  (spy/calls mz/spy-some-map)
+  (identity mz/spy-some-map)
+
+  (mz/some-map Schema)
+
+  (print *e)
+  (m/name nil)
   (m/children [:map [:foo string?]])
   (-> Schema malli-zipper z/node m/name)
   (ride-malli-zipper Schema)
@@ -127,7 +125,7 @@
 (= (m/children [:map [:nome string?]])
    (m/map-entries [:map [:nome string?]]))
 
-
+(m/name [:maybe integer?])
 
 (print *e)
   )

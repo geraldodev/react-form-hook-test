@@ -1,5 +1,6 @@
 {:paths ["src/main"]
  :deps {
+        superstring {:mvn/version "3.0.0"}
         appliedscience/js-interop {:mvn/version "0.2.5"}
         binaryage/devtools {:mvn/version "0.9.7"}
         lilactown/helix {:mvn/version "0.0.10"}
