@@ -36,6 +36,76 @@
     nil
     v))
 
+(defn use-form-state
+  [initial schema]
+  (j/let
+    [[state set-state] (hooks/use-state initial)
+     rfh-obj (rhf/useForm)]
+    {:state state
+     :set-state set-state
+     :rfh-obj rfh-obj}))
+
+(defnc ExampleUseFormState
+  []
+  (j/let [{:keys [state set-state rfh-obj]} (use-form-state {} MalliSchema)
+          ^:js {:keys [register
+                       handleSubmit
+                       errors] } rfh-obj
+
+          fn-submit (fn [data event]
+                      ;; we do not have data because state is on helix atom
+                      (.log js/console "submitted from edn version")
+
+                      )]
+
+    (d/div
+      (d/h3 "ExampleUseFormState")
+
+      (d/form
+        {:on-submit (handleSubmit fn-submit)}
+
+        (d/div
+          (d/label "person_name")
+          (d/input {:ref (register "person_name"
+                                   #js {:validate
+                                        (fn [_] (rfh-validate 
+                                                  (mu/get MalliSchema "person_name")
+                                                  (get state "person_name")))
+                                        })
+                    :on-change
+                    (fn [e]
+                      (let [v (->  e .-target .-value nil-blank)]
+                        (set-state assoc "person_name" v)
+                        ))})
+          ($ rhf/ErrorMessage {:name "person_name" :errors errors}))
+
+        (d/div
+          (d/label "sex")
+          (d/input {
+                    :ref (register "sex"
+                                   #js {:validate
+                                        (fn [_] (rfh-validate 
+                                                  (mu/get MalliSchema "sex")
+                                                  (get state "sex")))
+                                        })
+                    :on-change
+                    (fn [e]
+                      (let [v (->  e .-target .-value)]
+                        (set-state assoc "sex" v)))})
+          ($ rhf/ErrorMessage {:name "sex" :errors errors}) )
+
+        (d/div
+          (d/button {:type "submit"} "Submit"))
+
+        (d/div (d/p "see console for errors object"))
+        (.log js/console "errors edn version")
+        (.log js/console errors)
+
+        (d/div
+          (d/p "state")
+          (d/div (str state)))
+        ))))
+
 (defnc ExampleClojure
   []
   (j/let [[state set-state] (hooks/use-state {})
@@ -173,6 +243,7 @@
 (defn App
   []
   (d/div 
+    ($ ExampleUseFormState)
     ($ ExampleClojure)
     ($ ExampleJavascript))
   )
