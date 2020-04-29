@@ -38,12 +38,17 @@
 
 (defn use-form-state
   [initial schema]
+  ;; not dealing with zipper to lower complexity, assuming schema points to a map
+  {:pre [(m/schema? schema)
+         (= :map (m/name schema))]}
   (j/let
     [[state set-state] (hooks/use-state initial)
-     rfh-obj (rhf/useForm)]
+     rfh-obj (rhf/useForm)
+     m-entries (m/map-entries schema)]
     {:state state
      :set-state set-state
-     :rfh-obj rfh-obj}))
+     :rfh-obj rfh-obj
+     :map-entries m-entries}))
 
 (defnc ExampleUseFormState
   []
