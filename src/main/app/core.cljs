@@ -14,21 +14,27 @@
     [malli.core :as m]
     [malli.error :as me]
     [malli.util :as mu]
+    [malli.transform :as mt]
     ))
 
 (def MalliSchema
   (m/schema
     [:map 
-     ["person_name" string?]
+     ["person_name" {:label "Person Name"} string?]
+     [:age int?]
      ["sex" 
       [:enum {:error/message "Should be: male | female"}
        "male" "female"]]]))
 
 (defn rfh-validate
   [schema v]
-  (or (m/validate schema v)
-      (str/join \n (me/humanize
-                     (m/explain schema v)))))
+  (let [v# (m/decode schema v mt/string-transformer)]
+    (.log js/console schema)
+    (.log js/console (str v#))
+    (.log js/console (str (type v#)))
+    (or (m/validate schema v#)
+        (str/join \n (me/humanize
+                       (m/explain schema v#))))))
 
 (defn nil-blank
   [v]
@@ -50,17 +56,33 @@
      :rfh-obj rfh-obj
      :map-entries m-entries}))
 
+(defn render-input
+  [map-entry {:keys [state set-state rfh-obj]}]
+  (j/let [^:js {:keys [register]} rfh-obj
+          [field {:keys []
+                  :as field-props} schema] map-entry
+          name# (name field)]
+    (d/input { :ref (register name#
+                             #js {:validate
+                                  (fn [_] (rfh-validate 
+                                            schema
+                                            (get state field)))})
+              :on-change
+              (fn [e]
+                (let [v (->  e .-target .-value nil-blank)]
+                  (set-state assoc field v)))})))
+
 (defnc ExampleUseFormState
   []
-  (j/let [{:keys [state set-state rfh-obj]} (use-form-state {} MalliSchema)
+  (j/let [{:keys [map-entries state set-state rfh-obj]
+           :as form-state } (use-form-state {} MalliSchema)
           ^:js {:keys [register
                        handleSubmit
-                       errors] } rfh-obj
+                       errors]} rfh-obj
 
           fn-submit (fn [data event]
                       ;; we do not have data because state is on helix atom
                       (.log js/console "submitted from edn version")
-
                       )]
 
     (d/div
@@ -69,35 +91,11 @@
       (d/form
         {:on-submit (handleSubmit fn-submit)}
 
-        (d/div
-          (d/label "person_name")
-          (d/input {:ref (register "person_name"
-                                   #js {:validate
-                                        (fn [_] (rfh-validate 
-                                                  (mu/get MalliSchema "person_name")
-                                                  (get state "person_name")))
-                                        })
-                    :on-change
-                    (fn [e]
-                      (let [v (->  e .-target .-value nil-blank)]
-                        (set-state assoc "person_name" v)
-                        ))})
-          ($ rhf/ErrorMessage {:name "person_name" :errors errors}))
-
-        (d/div
-          (d/label "sex")
-          (d/input {
-                    :ref (register "sex"
-                                   #js {:validate
-                                        (fn [_] (rfh-validate 
-                                                  (mu/get MalliSchema "sex")
-                                                  (get state "sex")))
-                                        })
-                    :on-change
-                    (fn [e]
-                      (let [v (->  e .-target .-value)]
-                        (set-state assoc "sex" v)))})
-          ($ rhf/ErrorMessage {:name "sex" :errors errors}) )
+        (for [[field {:keys [label]}_ :as entry] map-entries]
+          (d/div {:key (str (name field))}
+            (d/label (or label (name field)))
+            (render-input entry form-state)
+            ($ rhf/ErrorMessage {:name (name field) :errors errors})))
 
         (d/div
           (d/button {:type "submit"} "Submit"))
@@ -249,8 +247,9 @@
   []
   (d/div 
     ($ ExampleUseFormState)
-    ($ ExampleClojure)
-    ($ ExampleJavascript))
+    ; ($ ExampleClojure)
+    ; ($ ExampleJavascript)
+    )
   )
 
 (defn ^:export start

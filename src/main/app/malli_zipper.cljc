@@ -5,6 +5,7 @@
     [malli.core :as m]
     [malli.error :as me]
     [malli.util :as mu]
+    [malli.transform :as mt]
     [spy.core :as spy]
     ))
 
@@ -222,6 +223,7 @@
   (m/name [:map [:foo string?]])
 
   (m/schema? nil)
+  (m/decode int? "23.23" mt/string-transformer)
 
   )
 
